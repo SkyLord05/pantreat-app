@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PANTreat - Karbon Elyaf Termokimyasal Ön İşlem Proses Simülatörü ve Tekno-Ekonomik Dijital İkiz Platformu. TÜBİTAK ve IraSME Ar-Ge Projesi.">
+  <title>PANTreat - Karbon Elyaf Termokimyasal Ön İşlem Platformu</title>
+
+  <!-- Google Fonts: Orbitron, Outfit & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Orbitron:wght@600;800;900&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+
+  <!-- Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Topbar Header -->
+  <header class="app-header">
+    <div class="brand-section">
+      <h1 class="brand-logo">PANTREAT</h1>
+      <span class="brand-badge">TÜBİTAK 1071 / IraSME</span>
+    </div>
+
+    <div class="top-metrics-banner">
+      <div class="top-metric-chip">
+        <span class="top-metric-label">ZAMAN KAZANCI</span>
+        <span class="top-metric-val cyan">%25+ (120→92 dk)</span>
+      </div>
+      <div class="top-metric-chip">
+        <span class="top-metric-label">ENERJİ TASARRUFU</span>
+        <span class="top-metric-val green">%20 Net MWh</span>
+      </div>
+      <div class="top-metric-chip">
+        <span class="top-metric-label">YILLIK KAZANÇ</span>
+        <span class="top-metric-val yellow">3.750.000 € / Yıl</span>
+      </div>
+      <div class="top-metric-chip">
+        <span class="top-metric-label">MEKANİK ARTIŞ</span>
+        <span class="top-metric-val purple">%10 GPa Dayanım</span>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button id="btn-export-json" class="btn-header" type="button">📥 JSON Raporu</button>
+      <button id="btn-export-print" class="btn-header" type="button">🖨️ Yazdır / PDF</button>
+    </div>
+  </header>
+
+  <!-- App Layout -->
+  <main class="app-container">
+    
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar-nav" aria-label="Ana Menü">
+      <button class="nav-tab-btn active" data-target="tab-simulator" type="button">
+        <span class="tab-icon">🔬</span>
+        <span>Proses Simülatörü</span>
+      </button>
+      <button class="nav-tab-btn" data-target="tab-economics" type="button">
+        <span class="tab-icon">📊</span>
+        <span>Tekno-Ekonomik Analiz</span>
+      </button>
+      <button class="nav-tab-btn" data-target="tab-biocoating" type="button">
+        <span class="tab-icon">🧪</span>
+        <span>Biyo-Bazlı Kaplama</span>
+      </button>
+      <button class="nav-tab-btn" data-target="tab-planttwin" type="button">
+        <span class="tab-icon">⚙️</span>
+        <span>Tesis Dijital İkizi</span>
+      </button>
+      <button class="nav-tab-btn" data-target="tab-consortium" type="button">
+        <span class="tab-icon">🤝</span>
+        <span>Konsorsiyum & WP Planı</span>
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+
+      <!-- ====================================================================
+           TAB 1: PROSES VE STABİLİZASYON SİMÜLATÖRÜ
+           ==================================================================== -->
+      <section id="tab-simulator" class="tab-panel active">
+        
+        <!-- Controls & Parameter Config -->
+        <div class="grid-2col">
+          
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">⚙️ Termokimyasal Ön İşlem Parametreleri</h2>
+              <div style="display: flex; gap: 8px;">
+                <button id="btn-preset-pilot" class="btn-header" type="button">Pilot (2.5 m/dk)</button>
+                <button id="btn-preset-industrial" class="btn-header" type="button">Endüstriyel (15 m/dk)</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="sim-method">Ön İşlem Kimyasal Ortamı</label>
+              <select id="sim-method" class="form-select">
+                <option value="kmno4" selected>KMnO4 (Sulu Oksidatif Katalizör - En Yüksek Verim)</option>
+                <option value="n2">Azot (N2) Gaz Fazı Ön İşlemi</option>
+                <option value="h2o2">H2O2 (Hidrojen Peroksit Banyosu)</option>
+                <option value="bio">Biyo-Bazlı Özel Katalizör Çözeltisi</option>
+              </select>
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <label class="form-label" for="sim-scale">Tesis Ölçeği</label>
+                <select id="sim-scale" class="form-select">
+                  <option value="pilot" selected>Pilot Tesis (0 - 5 m/dk)</option>
+                  <option value="industrial">Endüstriyel Hat (10 - 20 m/dk)</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="sim-conc">Konsantrasyon</label>
+                  <span id="sim-conc-val" class="form-val-badge">4.0 %</span>
+                </div>
+                <input id="sim-conc" class="form-range" type="range" min="1" max="10" step="0.5" value="4">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="sim-speed">Hat Hızı (Line Speed)</label>
+                <span id="sim-speed-val" class="form-val-badge">2.5 m/dk</span>
+              </div>
+              <input id="sim-speed" class="form-range" type="range" min="0.5" max="5.0" step="0.1" value="2.5">
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="sim-temp">Banyo Sıcaklığı</label>
+                  <span id="sim-temp-val" class="form-val-badge purple">75 °C</span>
+                </div>
+                <input id="sim-temp" class="form-range" type="range" min="40" max="90" step="1" value="75">
+              </div>
+
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="sim-stretch">Gerdirme Oranı</label>
+                  <span id="sim-stretch-val" class="form-val-badge green">8 %</span>
+                </div>
+                <input id="sim-stretch" class="form-range" type="range" min="0" max="15" step="1" value="8">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-checkbox-label">
+                <input id="sim-oven-bypass" class="form-checkbox" type="checkbox" checked>
+                <span><strong>1. Fırın Bölümünü Atla (Bypass):</strong> 30 dakikalık 1. Fırın yerine 2 dakikalık sürekli ön işlem uygula</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- KPI Summary Badges -->
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">📈 Simülasyon Çıktıları & Kazanımlar</h2>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 16px;">
+              <div class="kpi-card">
+                <span class="kpi-title">Toplam İşlem Süresi</span>
+                <span id="res-total-time" class="kpi-val cyan">92.0 dk</span>
+                <span class="kpi-sub">Geleneksel: 120.0 dk</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Zaman Tasarrufu</span>
+                <span id="res-time-saved" class="kpi-val green">%23.3</span>
+                <span class="kpi-sub">Hedef: %25+</span>
+              </div>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 16px;">
+              <div class="kpi-card">
+                <span class="kpi-title">Stabilizasyon Enerji Tasarrufu</span>
+                <span id="res-energy-saved" class="kpi-val yellow">%20.0</span>
+                <span class="kpi-sub">Fırın 1 eliminasyonu</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Ön Stabilizasyon Sıçraması (S)</span>
+                <span id="res-initial-s" class="kpi-val purple">%24.5</span>
+                <span class="kpi-sub">2 dk ön işlem sonucu</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" style="background: rgba(0, 240, 255, 0.05); border-color: var(--border-glow);">
+              <span class="kpi-title">Mekanik Özellikler (Karbon Elyaf)</span>
+              <div style="display: flex; justify-content: space-between; margin-top: 6px;">
+                <div>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Çekme Dayanımı:</span>
+                  <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--neon-cyan);">
+                    <span id="res-strength">4.18 GPa</span> <small id="res-strength-gain" style="font-size: 0.75rem; color: var(--neon-green);">(+10.0%)</small>
+                  </div>
+                </div>
+                <div>
+                  <span style="font-size: 0.8rem; color: var(--text-muted);">Elastisite Modülü:</span>
+                  <div style="font-family: var(--font-mono); font-size: 1.1rem; font-weight: 700; color: var(--neon-purple);">
+                    <span id="res-modulus">264.0 GPa</span> <small id="res-modulus-gain" style="font-size: 0.75rem; color: var(--neon-green);">(+10.0%)</small>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Charts Row -->
+        <div class="grid-2col">
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h3 class="card-title">📉 Stabilizasyon Derecesi S(%) Eğrisi</h3>
+            </div>
+            <div class="chart-box">
+              <canvas id="chart-stabilization"></canvas>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h3 class="card-title">🌡️ Sıcaklık Dönüşüm Profili (°C)</h3>
+            </div>
+            <div class="chart-box">
+              <canvas id="chart-temperature"></canvas>
+            </div>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 2: TEKNO-EKONOMİK VE ENERJİ / CO2 ANALİZİ
+           ==================================================================== -->
+      <section id="tab-economics" class="tab-panel">
+        
+        <div class="grid-2col">
+          
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">🏭 Üretim Tesisi Parametreleri</h2>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="econ-capacity">Yıllık Tesis Kapasitesi</label>
+                <span id="econ-capacity-val" class="form-val-badge">1.500 Ton/Yıl</span>
+              </div>
+              <input id="econ-capacity" class="form-range" type="range" min="500" max="5000" step="250" value="1500">
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="econ-price">Satış Fiyatı (€/kg)</label>
+                  <span id="econ-price-val" class="form-val-badge yellow">25.0 €/kg</span>
+                </div>
+                <input id="econ-price" class="form-range" type="range" min="15" max="45" step="1" value="25">
+              </div>
+
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="econ-energy-cost">Elektrik Birim Maliyeti</label>
+                  <span id="econ-energy-cost-val" class="form-val-badge">0.16 €/kWh</span>
+                </div>
+                <input id="econ-energy-cost" class="form-range" type="range" min="0.08" max="0.35" step="0.01" value="0.16">
+              </div>
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="econ-capex">Ön İşlem Tesisi Yatırımı (CAPEX)</label>
+                  <span id="econ-capex-val" class="form-val-badge purple">950.000 €</span>
+                </div>
+                <input id="econ-capex" class="form-range" type="range" min="400000" max="2500000" step="50000" value="950000">
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="econ-co2-factor">Şebeke CO2 Katsayısı (kg/kWh)</label>
+                <input id="econ-co2-factor" class="form-input" type="number" step="0.01" value="0.42">
+              </div>
+            </div>
+          </div>
+
+          <!-- Economics Outputs -->
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">💰 Yıllık Tasarruf ve Geri Dönüş (ROI)</h2>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 16px;">
+              <div class="kpi-card">
+                <span class="kpi-title">Brüt Yıllık Tasarruf (%10)</span>
+                <span id="econ-res-annual-savings" class="kpi-val yellow">€ 3.750.000</span>
+                <span class="kpi-sub">Birim Tasarruf: <strong id="econ-res-saving-per-kg">€ 2.50 / kg</strong></span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Net Yıllık Kazanç (OPEX Düşüldükten Sonra)</span>
+                <span id="econ-res-net-savings" class="kpi-val green">€ 3.360.000</span>
+                <span class="kpi-sub">Kimyasal/Bakım düşülmüştür</span>
+              </div>
+            </div>
+
+            <div class="grid-3col">
+              <div class="kpi-card">
+                <span class="kpi-title">Tasarruf Edilen Enerji</span>
+                <span id="econ-res-kwh-saved" class="kpi-val cyan">4.80 GWh/Yıl</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Engellenen CO2 Emisyonu</span>
+                <span id="econ-res-co2-saved" class="kpi-val green">2.016 Ton/Yıl</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Yatırım Geri Dönüşü</span>
+                <span id="econ-res-payback" class="kpi-val purple">3.4 Ay</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h3 class="card-title">📊 Geleneksel vs PANTreat Karşılaştırmalı Maliyet Yapısı (€/kg CF)</h3>
+          </div>
+          <div class="chart-box tall">
+            <canvas id="chart-cost-breakdown"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 3: BİYO-BAZLI KAPLAMA VE REÇİNE STOKİYOMETRİSİ (MARMARA & BCD)
+           ==================================================================== -->
+      <section id="tab-biocoating" class="tab-panel">
+        
+        <div class="grid-2col">
+          
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">🌱 Biyo-Poliüretan Sentez Parametreleri</h2>
+            </div>
+
+            <div class="form-group">
+              <div class="form-label-row">
+                <label class="form-label" for="coat-esbo-mass">ESBO (Epoksidize Soya Yağı) Kütlesi</label>
+                <span id="coat-esbo-val" class="form-val-badge">100 g</span>
+              </div>
+              <input id="coat-esbo-mass" class="form-range" type="range" min="50" max="500" step="10" value="100">
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="coat-aa-ratio">Akrilik Asit (AA) / Epoksi Oranı</label>
+                  <span id="coat-aa-val" class="form-val-badge purple">1.00 mol</span>
+                </div>
+                <input id="coat-aa-ratio" class="form-range" type="range" min="0.8" max="1.2" step="0.05" value="1.0">
+              </div>
+
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="coat-tdi-ratio">TDI-HEMA Adduct (NCO:OH Oranı)</label>
+                  <span id="coat-tdi-val" class="form-val-badge green">0.50 NCO:OH</span>
+                </div>
+                <input id="coat-tdi-ratio" class="form-range" type="range" min="0.2" max="0.9" step="0.05" value="0.5">
+              </div>
+            </div>
+
+            <div class="grid-2col">
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="coat-uv-intensity">UV Lamba Gücü</label>
+                  <span id="coat-uv-int-val" class="form-val-badge yellow">120 mW/cm²</span>
+                </div>
+                <input id="coat-uv-intensity" class="form-range" type="range" min="50" max="250" step="10" value="120">
+              </div>
+
+              <div class="form-group">
+                <div class="form-label-row">
+                  <label class="form-label" for="coat-uv-time">UV Işıma Süresi</label>
+                  <span id="coat-uv-time-val" class="form-val-badge cyan">30 sn</span>
+                </div>
+                <input id="coat-uv-time" class="form-range" type="range" min="10" max="60" step="5" value="30">
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div class="card-title-row">
+              <h2 class="card-title">🧪 Reçine Reçetesi & Performans Özellikleri</h2>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 14px;">
+              <div class="kpi-card">
+                <span class="kpi-title">Jel İçeriği (Gel Content)</span>
+                <span id="coat-res-gel" class="kpi-val green">%96.8</span>
+                <span class="kpi-sub">Çapraz bağlanma derecesi</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Kalem Sertliği</span>
+                <span id="coat-res-hardness" class="kpi-val cyan">3H</span>
+                <span class="kpi-sub">ASTM D3363 Standardı</span>
+              </div>
+            </div>
+
+            <div class="grid-2col" style="margin-bottom: 14px;">
+              <div class="kpi-card">
+                <span class="kpi-title">Kimyasal Korozyon Direnci (KMnO4 / H2O2)</span>
+                <span id="coat-res-corrosion" class="kpi-val purple">92.5 / 100</span>
+              </div>
+              <div class="kpi-card">
+                <span class="kpi-title">Yüzey Yapışması (Alüminyum/Çelik)</span>
+                <span id="coat-res-adhesion" class="kpi-val yellow">5B (Mükemmel)</span>
+              </div>
+            </div>
+
+            <div class="kpi-card" style="background: rgba(255, 255, 255, 0.02);">
+              <span class="kpi-title">Bileşen Kütleleri Dağılımı:</span>
+              <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin-top: 4px;">
+                • Akrilik Asit (AA): <strong id="coat-res-aa-mass" style="color: var(--neon-cyan);">29.2 g</strong> | 
+                • TDI-HEMA Adduct: <strong id="coat-res-tdi-mass" style="color: var(--neon-purple);">61.8 g</strong> | 
+                • Foto-başlatıcı: <strong id="coat-res-pi-mass" style="color: var(--neon-yellow);">5.7 g</strong><br>
+                • Toplam Parti Ağırlığı: <strong id="coat-res-total-mass" style="color: var(--neon-green);">196.7 g</strong> | 
+                • VOC Salınımı: <strong id="coat-res-voc" style="color: #fff;">0.0 g/L (Çözücüsüz)</strong>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h3 class="card-title">🕸️ Biyo-Kaplama Performans Radar Analizi</h3>
+          </div>
+          <div class="chart-box">
+            <canvas id="chart-bio-radar"></canvas>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 4: MODÜLER ÖN ARITMA TESİSİ DİJİTAL İKİZİ (3WIN & HERBERGER)
+           ==================================================================== -->
+      <section id="tab-planttwin" class="tab-panel">
+        
+        <!-- Live Plant Schematic -->
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="card-title">⚙️ PANTreat Modüler Ön Arıtma Tesisi Şematiği & Hat Akışı</h2>
+            <span style="font-size: 0.8rem; color: var(--neon-green);">● CANLI SİMÜLASYON AKTİF</span>
+          </div>
+
+          <div class="plant-schematic-wrapper">
+            <div class="fiber-line-anim"></div>
+            <div class="schematic-track">
+              
+              <div class="schematic-stage active">
+                <div class="stage-icon">🧵</div>
+                <div class="stage-name">PAN Lif Besleme</div>
+                <div class="stage-param">Çekici: 12k - 24k</div>
+              </div>
+
+              <div class="schematic-stage active">
+                <div class="stage-icon">🔄</div>
+                <div class="stage-name">1. Omega Sürücü</div>
+                <div class="stage-param" id="twin-val-speed">2.5 m/dk</div>
+              </div>
+
+              <div class="schematic-stage active">
+                <div class="stage-icon">⚗️</div>
+                <div class="stage-name">Cam Kimyasal Banyo</div>
+                <div class="stage-param" id="twin-val-temp">75.0 °C</div>
+              </div>
+
+              <div class="schematic-stage active">
+                <div class="stage-icon">🔁</div>
+                <div class="stage-name">Dozajlama & Filtre</div>
+                <div class="stage-param" id="twin-val-dosing">45.0 ml/dk</div>
+              </div>
+
+              <div class="schematic-stage active">
+                <div class="stage-icon">♨️</div>
+                <div class="stage-name">IR Kurutma Tüneli</div>
+                <div class="stage-param" id="twin-val-power">8.5 kW</div>
+              </div>
+
+              <div class="schematic-stage active">
+                <div class="stage-icon">🔥</div>
+                <div class="stage-name">Fırın 2 (Bypass 1)</div>
+                <div class="stage-param">235 °C Giriş</div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+
+        <!-- Telemetry Sensor Grid -->
+        <div class="grid-4col">
+          <div class="kpi-card">
+            <span class="kpi-title">pH Sensörü</span>
+            <span id="twin-val-ph" class="kpi-val cyan">4.85</span>
+            <span class="kpi-sub">HW Ölçüm Hücresi</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title">İletkenlik Sensörü</span>
+            <span id="twin-val-cond" class="kpi-val purple">14.2 mS/cm</span>
+            <span class="kpi-sub">İyon Konsantrasyonu</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title">Bulanıklık (Turbidity)</span>
+            <span id="twin-val-turb" class="kpi-val yellow">3.4 NTU</span>
+            <span class="kpi-sub">Lif Parçacık Takibi</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title">Filtre Basınç Farkı</span>
+            <span id="twin-val-pressure" class="kpi-val green">1.25 Bar</span>
+            <span id="twin-val-filter-status" class="kpi-sub">Optimal (Normal Akış)</span>
+          </div>
+        </div>
+
+        <div class="grid-3col">
+          <div class="kpi-card">
+            <span class="kpi-title">Omega Lif Gerilimi</span>
+            <span id="twin-val-tension" class="kpi-val cyan">42.5 N</span>
+            <span class="kpi-sub">Gerdirme: %8</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title">Gerçek Kimyasal Konsantrasyonu</span>
+            <span id="twin-val-conc" class="kpi-val green">%3.96</span>
+            <span class="kpi-sub">Hedef: %4.00</span>
+          </div>
+
+          <div class="kpi-card">
+            <span class="kpi-title">Egzoz Havalandırma Debisi</span>
+            <span class="kpi-val purple">1.450 RPM</span>
+            <span class="kpi-sub">Davlumbaz Çekişi</span>
+          </div>
+        </div>
+
+      </section>
+
+      <!-- ====================================================================
+           TAB 5: KONSORSİYUM VE İŞ PAKETLERİ YÖNETİMİ (WP1 - WP8)
+           ==================================================================== -->
+      <section id="tab-consortium" class="tab-panel">
+        
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="card-title">🤝 PANTreat Konsorsiyum Ortakları</h2>
+            <span style="font-size: 0.85rem; color: var(--text-muted);">Toplam Bütçe: <strong>1.083.657 €</strong> • Toplam Efor: <strong>168.9 Kişi-Ay</strong></span>
+          </div>
+          <div id="consortium-partners-list"></div>
+        </div>
+
+        <div class="glass-card">
+          <div class="card-title-row">
+            <h2 class="card-title">📋 İş Paketleri & Kilometre Taşları (WP1 - WP8)</h2>
+          </div>
+          <div id="consortium-wp-list" class="wp-grid"></div>
+        </div>
+
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Scripts -->
+  <script src="js/config.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/economics.js"></script>
+  <script src="js/bioCoating.js"></script>
+  <script src="js/plantTwin.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
